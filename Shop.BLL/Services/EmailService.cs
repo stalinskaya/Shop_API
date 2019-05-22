@@ -14,12 +14,12 @@ namespace Shop.BLL.Services
 			{
 				EnableSsl = true,
 				UseDefaultCredentials = false,
-				Credentials = new NetworkCredential("yanastalin99@gmail.com", "fuck164466")
+				Credentials = new NetworkCredential("yanina.stalinskaya@gmail.com", "Hello164466!")
 			};
 
 			var mailMessage = new MailMessage
 			{
-				From = new MailAddress("yanastalin99@gmail.com")
+				From = new MailAddress("yanina.stalinskaya@gmail.com")
 			};
 			mailMessage.To.Add(email);
 			mailMessage.Subject = subject;

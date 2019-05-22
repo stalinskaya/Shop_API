@@ -10,7 +10,7 @@ namespace Shop.BLL.Interfaces
 {
 	public interface IAccountService : IDisposable
 	{
-		Task<OperationDetails> Create(ApplicationUser user, string pass);
+		Task<object> Create(ApplicationUser user, string pass);
 		Task<ApplicationUser> FindUserById(string userId);
 		Task<ApplicationUser> FindUserByName(string userName);
 		Task<ApplicationUser> FindUserByEmail(string email);
@@ -18,7 +18,6 @@ namespace Shop.BLL.Interfaces
 		Task<OperationDetails> EmailConfirmed(ApplicationUser user);
 		Task<OperationDetails> Authentication(string email, string password, bool rememberMe, bool value);
 		Task<OperationDetails> CheckPassword(ApplicationUser user, string password);
-		Task<OperationDetails> GenerateCode(ApplicationUser user);
 		IEnumerable<ApplicationUser> GetUsers();
 		string GenerateToken(ApplicationUser user);
 		Task<OperationDetails> Exit();

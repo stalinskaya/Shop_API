@@ -14,6 +14,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using System.Web;
 
 namespace Shop.BLL.Services
 {
@@ -23,16 +24,18 @@ namespace Shop.BLL.Services
 		private UserManager<ApplicationUser> UserManager;
 		private SignInManager<ApplicationUser> SignInManager;
 		private readonly ApplicationSettings applicationSettings;
+		private readonly IEmailService emailService;
 		
-		public AccountService(IUnitOfWork uow, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> options)
+		public AccountService(IUnitOfWork uow, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> options, IEmailService emailService)
 		{
 			Database = uow;
 			UserManager = userManager;
 			SignInManager = signInManager;
 			this.applicationSettings = options.Value;
+			this.emailService = emailService;
 		}
 
-		public async Task<OperationDetails> Create(ApplicationUser newUser, string password)
+		public async Task<object> Create(ApplicationUser newUser, string password)
 		{
 			var user = await UserManager.FindByEmailAsync(newUser.Email);
 			if (user == null)
@@ -42,23 +45,35 @@ namespace Shop.BLL.Services
 					Email = newUser.Email,
 					UserName = newUser.Email,
 					FirstName = newUser.FirstName,
-					LastName = newUser.LastName
+					LastName = newUser.LastName,
+					Birthday = DateTime.Now
 				};
-				var result = await UserManager.CreateAsync(user, password);
-				await UserManager.AddToRoleAsync(user, "Member");
-				if (result.Errors.Any())
+				try
 				{
-					return new OperationDetails(false, result.Errors.FirstOrDefault().ToString(), "");
+					var result = await UserManager.CreateAsync(user, password);
+					if (result.Errors.Any())
+					{
+						return new OperationDetails(false, result.Errors.FirstOrDefault().ToString(), "");
+					}
+					await UserManager.AddToRoleAsync(user, "Member");
+
+					var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+					var encode = HttpUtility.UrlEncode(code);
+					var callbackUrl = new StringBuilder("https://")
+						.AppendFormat("localhost:49223")
+						.AppendFormat("api/account/ConfirmEmail")
+						.AppendFormat($"?userId={user.Id}&code={encode}");
+					await emailService.SendEmailAsync(user.Email, "ConfirmEmail",
+						$"Confirm the registration by clicking on the link: <a href='{callbackUrl}'>link</a>");
+					return result;
 				}
-				else
+				catch (Exception ex)
 				{
-					return new OperationDetails(true, "Successful registration", user.Id);
+					throw ex;
 				}
 			}
 			else
-			{
-				return new OperationDetails(false, "User with this login already exists", "Email");
-			}
+				return null;
 		}
 
 
@@ -95,14 +110,6 @@ namespace Shop.BLL.Services
 		{
 			var success = await UserManager.ConfirmEmailAsync(user, code);
 			return success.Succeeded ? new OperationDetails(true, "Success", "") : new OperationDetails(false, "Error", "");
-		}
-
-		public async Task<OperationDetails> GenerateCode(ApplicationUser user)
-		{
-			var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-			if (code != null)
-				return new OperationDetails(true, "Success", code);
-			return new OperationDetails(false, "Error", "");
 		}
 
 		public string GenerateToken(ApplicationUser user)

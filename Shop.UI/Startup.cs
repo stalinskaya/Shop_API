@@ -37,48 +37,8 @@ namespace Shop.UI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			//services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
-
-			//services.Configure<CookiePolicyOptions>(options =>
-			//{
-			//	// This lambda determines whether user consent for non-essential cookies is needed for a given request.
-			//	options.CheckConsentNeeded = context => true;
-			//	options.MinimumSameSitePolicy = SameSiteMode.None;
-			//});
-
-			//services.AddDbContext<ShopContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ShopContext")));
-
-
-			//services.Configure<IdentityOptions>(options =>
-			//{
-			//	options.Password.RequireDigit = false;
-			//	options.Password.RequireNonAlphanumeric = false;
-			//	options.Password.RequireLowercase = false;
-			//	options.Password.RequireUppercase = false;
-			//	options.Password.RequiredLength = 4;
-			//}
-			//);
-
-			//services.AddCors();
-
-
-
-
-
-			//services.ConfigureApplicationCookie(options =>
-			//{
-			//	// Cookie settings
-			//	options.Cookie.HttpOnly = true;
-			//	options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-			//	options.SlidingExpiration = true;
-			//});
-			//services.AddDistributedMemoryCache();
-
-
-
+		
 			services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
-
-			
 
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
