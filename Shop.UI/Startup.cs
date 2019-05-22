@@ -37,16 +37,53 @@ namespace Shop.UI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			//services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
+
+			//services.Configure<CookiePolicyOptions>(options =>
+			//{
+			//	// This lambda determines whether user consent for non-essential cookies is needed for a given request.
+			//	options.CheckConsentNeeded = context => true;
+			//	options.MinimumSameSitePolicy = SameSiteMode.None;
+			//});
+
+			//services.AddDbContext<ShopContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ShopContext")));
+
+
+			//services.Configure<IdentityOptions>(options =>
+			//{
+			//	options.Password.RequireDigit = false;
+			//	options.Password.RequireNonAlphanumeric = false;
+			//	options.Password.RequireLowercase = false;
+			//	options.Password.RequireUppercase = false;
+			//	options.Password.RequiredLength = 4;
+			//}
+			//);
+
+			//services.AddCors();
+
+
+
+
+
+			//services.ConfigureApplicationCookie(options =>
+			//{
+			//	// Cookie settings
+			//	options.Cookie.HttpOnly = true;
+			//	options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+			//	options.SlidingExpiration = true;
+			//});
+			//services.AddDistributedMemoryCache();
+
+
+
 			services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
 
-			services.Configure<CookiePolicyOptions>(options =>
-			{
-				// This lambda determines whether user consent for non-essential cookies is needed for a given request.
-				options.CheckConsentNeeded = context => true;
-				options.MinimumSameSitePolicy = SameSiteMode.None;
-			});
+			
 
-			services.AddDbContext<ShopContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ShopContext")));
+			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+			services.AddDbContext<ShopContext>(options =>
+			options.UseSqlServer(Configuration.GetConnectionString("ShopContext")));
 
 			services.AddIdentity<Shop.Models.ApplicationUser, IdentityRole>(options =>
 			{
@@ -54,6 +91,15 @@ namespace Shop.UI
 			})
 			.AddEntityFrameworkStores<ShopContext>()
 			.AddDefaultTokenProviders();
+
+			services.AddSession(options =>
+			{
+				// Set a short timeout for easy testing.
+				options.IdleTimeout = TimeSpan.FromSeconds(10);
+				options.Cookie.HttpOnly = true;
+				// Make the session cookie essential
+				options.Cookie.IsEssential = true;
+			});
 
 			services.Configure<IdentityOptions>(options =>
 			{
@@ -65,10 +111,6 @@ namespace Shop.UI
 			}
 			);
 
-			services.AddCors();
-
-			
-
 			services.AddScoped<DAL.Interfaces.IUnitOfWork, DAL.Repositories.EFUnitOfWork>();
 			services.AddScoped<IProductService, ProductService>();
 			services.AddScoped<IOrderProductService, OrderProductService>();
@@ -78,38 +120,18 @@ namespace Shop.UI
 			services.AddScoped<IOrderService, OrderService>();
 			services.AddScoped<IFileService, FileService>();
 
-			services.ConfigureApplicationCookie(options =>
-			{
-				// Cookie settings
-				options.Cookie.HttpOnly = true;
-				options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-				options.SlidingExpiration = true;
-			});
-			services.AddDistributedMemoryCache();
 
-			services.AddSession(options =>
-			{
-				// Set a short timeout for easy testing.
-				options.IdleTimeout = TimeSpan.FromSeconds(10);
-				options.Cookie.HttpOnly = true;
-				// Make the session cookie essential
-				options.Cookie.IsEssential = true;
-			});
-			
-			services.AddMvc(config =>
-			{
-				config.Filters.Add<ActionFilter>();
-				config.Filters.Add<ExceptionFilter>();
-			}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			services.AddCors();
 
+			//Jwt Authentication
 
 			var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"].ToString());
 
-			services.AddAuthentication(options =>
+			services.AddAuthentication(x =>
 			{
-				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+				x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+				x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 			}).AddJwtBearer(x => {
 				x.RequireHttpsMetadata = false;
 				x.SaveToken = false;
@@ -123,7 +145,7 @@ namespace Shop.UI
 				};
 			});
 		}
-
+	
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
 		{
@@ -158,7 +180,7 @@ namespace Shop.UI
 					name: "default",
 					template: "{controller=Home}/{action=Index}/{id?}");
 			});
-			CreateRoles(serviceProvider).Wait();
+			//CreateRoles(serviceProvider).Wait();
 		}
 
 		private async Task CreateRoles(IServiceProvider serviceProvider)

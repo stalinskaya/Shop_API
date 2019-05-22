@@ -80,7 +80,7 @@ namespace Shop.UI.Controllers
 				existingProduct.Price = product.Price;
 				existingProduct.AddDate = DateTime.Now;
 
-				productService.EditProduct(product);
+				productService.EditProduct(existingProduct);
 			}
 			catch (ValidationException ex)
 			{
