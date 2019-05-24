@@ -14,7 +14,7 @@ namespace Shop.BLL.Services
 			{
 				EnableSsl = true,
 				UseDefaultCredentials = false,
-				Credentials = new NetworkCredential("yanastalin99@gmail.com", "fuck164466!")
+				Credentials = new NetworkCredential("yanastalin99@gmail.com", "fuck164466")
 			};
 
 			var mailMessage = new MailMessage

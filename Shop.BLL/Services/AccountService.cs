@@ -54,11 +54,11 @@ namespace Shop.BLL.Services
 					if (!result.Succeeded)
 						return null;
 
-					await UserManager.AddToRoleAsync(user, "user");
+					await UserManager.AddToRoleAsync(user, "member");
 
 					var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
 					var encode = HttpUtility.UrlEncode(code);
-					var callbackUrl = new StringBuilder("https://")
+					var callbackUrl = new StringBuilder("http://")
 						.AppendFormat(url)
 						.AppendFormat("/api/account/ConfirmEmail")
 						.AppendFormat($"?userId={user.Id}&code={encode}");
