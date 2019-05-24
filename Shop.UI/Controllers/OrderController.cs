@@ -10,10 +10,10 @@ using Shop.UI.ViewModels;
 
 namespace Shop.UI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class OrderController : ControllerBase
-    {
+	[Route("api/[controller]")]
+	[ApiController]
+	public class OrderController : ControllerBase
+	{
 		public readonly IOrderService orderService;
 		public readonly IOrderProductService orderProductService;
 		public readonly IProductService productService;
@@ -65,7 +65,8 @@ namespace Shop.UI.Controllers
 		//	return View(order);
 		//}
 
-		[HttpPost]
+		[HttpGet]
+		[Route("Report")]
 		public IActionResult Report(ReportViewModel reportViewModel)
 		{
 			if (!ModelState.IsValid)
@@ -78,12 +79,10 @@ namespace Shop.UI.Controllers
 				if (order.OrderDate <= reportViewModel.TillDate || order.OrderDate >= reportViewModel.FromDate)
 					filteredOrders.Add(order);
 			}
-			return Ok();
+			return Ok(filteredOrders);
 		}
 
-		[HttpGet("/report/{id}")]
-		[ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[HttpGet("Export")]
 		public IActionResult Export(ReportViewModel reportViewModel)
 		{
 			if (!ModelState.IsValid)

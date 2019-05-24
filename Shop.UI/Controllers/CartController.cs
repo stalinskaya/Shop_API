@@ -94,9 +94,8 @@ namespace Shop.UI.Controllers
 			}
 			if (ModelState.IsValid)
 			{
-				var userId = HttpContext.User.Identity.Name;
-				var user = accountService.FindUserByName(userId);
-				orderService.ProcessOrder(cart.ToList(), user.Result.Id);
+				var userId = User.Claims.First(c => c.Type == "UserID").Value; ;
+				orderService.ProcessOrder(cart.ToList(), userId);
 				cart.Clear();
 				return Ok();
 			}
