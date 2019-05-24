@@ -65,9 +65,9 @@ namespace Shop.UI.Controllers
 		//	return View(order);
 		//}
 
-		[HttpGet]
+		[HttpPost]
 		[Route("Report")]
-		public IActionResult Report(ReportViewModel reportViewModel)
+		public IActionResult Report([FromForm]ReportViewModel reportViewModel)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest();
@@ -82,8 +82,8 @@ namespace Shop.UI.Controllers
 			return Ok(filteredOrders);
 		}
 
-		[HttpGet("Export")]
-		public IActionResult Export(ReportViewModel reportViewModel)
+		[HttpPost("Export")]
+		public IActionResult Export([FromForm]ReportViewModel reportViewModel)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest();
