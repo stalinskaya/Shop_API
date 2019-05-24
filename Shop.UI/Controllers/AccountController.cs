@@ -51,10 +51,8 @@ namespace Shop.UI.Controllers
 			return Ok(user);
 		}
 
-		[HttpPost]
-		[Route("Register")]
-		//POST : /api/ApplicationUser/Register
-		public async Task<Object> Post([FromForm] RegisterViewModel model)
+		[HttpPost, Route("Register")]
+		public async Task<object> Register([FromForm]RegisterViewModel model)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest();
@@ -66,52 +64,45 @@ namespace Shop.UI.Controllers
 				FirstName = model.FirstName,
 				LastName = model.LastName
 			};
-			//if (model.File != null)
-			//{
-			//	await fileService.UploadImage(model.File, user.Id);
-			//}
-			try
-			{
-				var result = await accountService.Create(user, model.Password);
-				//if (result.Succeeded)
-				//{
-				//	var findUser = await accountService.FindUserById(result.Property);
-				//	var code = await accountService.GenerateCode(findUser);
-
-				//	var callbackUrl = Url.Action(
-				//		"ConfirmEmail",
-				//		"Account",
-				//		new { userId = findUser.Id, code = code.Property },
-				//		protocol: HttpContext.Request.Scheme);
-
-				//	await emailService.SendEmailAsync(user.Email, "Confirm your account",
-				//		$"Confirm the registration by clicking on the link: <a href='{callbackUrl}'>link</a>");
-				//	return Ok();
-				//}
-				//else
-				//	ModelState.AddModelError("", result.Message);
-				//return BadRequest();
-				return Ok();
-			}
-			catch (Exception ex)
-			{
-				throw ex;
-			}
+			var url = HttpContext.Request.Host.ToString();
+			var result = await accountService.Create(user, model.Password, url);
+			if (result == null)
+				return BadRequest(new { message = "Error" });
+			return Ok(result);
 		}
+
+		//GET: /api/account/ConfirmEmail?userid=value&code=value
+		[HttpGet]
+		[Route("ConfirmEmail", Name = "ConfirmEmailRoute")]
+		public async Task<IActionResult> ConfirmEmail(string userId, string code)
+		{
+			var user = await accountService.FindUserById(userId);
+			if (user == null)
+			{
+				return BadRequest("Error");
+			}
+			var result = await accountService.ConfirmEmail(user, code);
+			if (result.Succeeded)
+				return Ok();
+			return BadRequest(result.Message);
+		}
+
+	
 
 		[HttpPost]
 		[Route("Login")]
 		//POST : /api/ApplicationUser/Login
-		public async Task<IActionResult> Login(LoginViewModel model)
+		public async Task<IActionResult> Login([FromForm]LoginViewModel model)
 		{
-			var user = await accountService.FindUserByEmail(model.Email);
-			if (user != null && accountService.CheckPassword(user, model.Password).IsCompletedSuccessfully)
+			var user = new ApplicationUser
 			{
-				var token = accountService.GenerateToken(user);
+				Email = model.Email,
+				UserName = model.Email
+			};
+			var token = await accountService.Login(user, model.Password);
+			if (token != null)
 				return Ok(new { token });
-			}
-			else
-				return BadRequest(new { message = "Username or password is incorrect." });
+			return BadRequest(new { message = "Username or password is incorrect or not confirm email." });
 		}
 	}
 }

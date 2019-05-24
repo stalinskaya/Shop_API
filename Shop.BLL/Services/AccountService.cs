@@ -35,7 +35,7 @@ namespace Shop.BLL.Services
 			this.emailService = emailService;
 		}
 
-		public async Task<object> Create(ApplicationUser newUser, string password)
+		public async Task<object> Create(ApplicationUser newUser, string password, string url)
 		{
 			var user = await UserManager.FindByEmailAsync(newUser.Email);
 			if (user == null)
@@ -51,19 +51,19 @@ namespace Shop.BLL.Services
 				try
 				{
 					var result = await UserManager.CreateAsync(user, password);
-					if (result.Errors.Any())
-					{
-						return new OperationDetails(false, result.Errors.FirstOrDefault().ToString(), "");
-					}
-					await UserManager.AddToRoleAsync(user, "Member");
+					if (!result.Succeeded)
+						return null;
+
+					await UserManager.AddToRoleAsync(user, "user");
 
 					var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
 					var encode = HttpUtility.UrlEncode(code);
 					var callbackUrl = new StringBuilder("https://")
-						.AppendFormat("localhost:49223")
-						.AppendFormat("api/account/ConfirmEmail")
+						.AppendFormat(url)
+						.AppendFormat("/api/account/ConfirmEmail")
 						.AppendFormat($"?userId={user.Id}&code={encode}");
-					await emailService.SendEmailAsync(user.Email, "ConfirmEmail",
+
+					await emailService.SendEmailAsync(user.Email, "Confirm your account",
 						$"Confirm the registration by clicking on the link: <a href='{callbackUrl}'>link</a>");
 					return result;
 				}
@@ -112,23 +112,34 @@ namespace Shop.BLL.Services
 			return success.Succeeded ? new OperationDetails(true, "Success", "") : new OperationDetails(false, "Error", "");
 		}
 
-		public string GenerateToken(ApplicationUser user)
+		public async Task<object> Login(ApplicationUser new_user, string password)
 		{
-			var tokenDescriptor = new SecurityTokenDescriptor
+			var user = await UserManager.FindByNameAsync(new_user.UserName);
+			if (user != null
+				&& await UserManager.CheckPasswordAsync(user, password)
+				&& await UserManager.IsEmailConfirmedAsync(user))
 			{
-				Subject = new ClaimsIdentity(new Claim[]
+				var role = await UserManager.GetRolesAsync(user);
+				var options = new IdentityOptions();
+
+				var tokenDescriptor = new SecurityTokenDescriptor
+				{
+					Subject = new ClaimsIdentity(new Claim[]
 					{
 						new Claim("UserID",user.Id.ToString())
 					}),
-				Expires = DateTime.UtcNow.AddDays(1),
-				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(applicationSettings.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)
-			};
-			var tokenHandler = new JwtSecurityTokenHandler();
-			var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-			var token = tokenHandler.WriteToken(securityToken);
-			return token;
+					Expires = DateTime.UtcNow.AddDays(1),
+					SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(applicationSettings.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)
+				};
+				var tokenHandler = new JwtSecurityTokenHandler();
+				var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+				var token = tokenHandler.WriteToken(securityToken);
+				return token;
+			}
+			else
+				return null;
 		}
-
+		
 		public async Task<OperationDetails> EmailConfirmed(ApplicationUser user)
 		{
 			var confirm = await UserManager.IsEmailConfirmedAsync(user);
