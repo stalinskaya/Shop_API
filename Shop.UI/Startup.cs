@@ -40,6 +40,21 @@ namespace Shop.UI
 		
 			services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
 
+			services.Configure<CookiePolicyOptions>(options =>
+			{
+				options.CheckConsentNeeded = context => true; // consent required
+				options.MinimumSameSitePolicy = SameSiteMode.None;
+			});
+
+			services.AddSession(options =>
+			{
+				// Set a short timeout for easy testing.
+				options.IdleTimeout = TimeSpan.FromSeconds(10);
+				options.Cookie.HttpOnly = true;
+				// Make the session cookie essential
+				options.Cookie.IsEssential = true;
+			});
+
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
 			services.AddDbContext<ShopContext>(options =>
@@ -52,15 +67,7 @@ namespace Shop.UI
 			.AddEntityFrameworkStores<ShopContext>()
 			.AddDefaultTokenProviders();
 
-			services.AddSession(options =>
-			{
-				// Set a short timeout for easy testing.
-				options.IdleTimeout = TimeSpan.FromSeconds(10);
-				options.Cookie.HttpOnly = true;
-				// Make the session cookie essential
-				options.Cookie.IsEssential = true;
-			});
-
+			
 			services.Configure<IdentityOptions>(options =>
 			{
 				options.Password.RequireDigit = false;
