@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shop.BLL.Interfaces;
@@ -10,6 +11,7 @@ using Shop.UI.ViewModels;
 
 namespace Shop.UI.Controllers
 {
+	[Authorize(Roles = "Admin")]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class OrderController : ControllerBase

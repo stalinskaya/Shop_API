@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -33,11 +34,13 @@ namespace Shop.UI.Controllers
 			this.fileService = fileService;
 		}
 
+		[Authorize(Roles = "Admin")]
 		public IEnumerable<ApplicationUser> Get()
 		{
 			return accountService.GetUsers();
 		}
 
+		[Authorize(Roles = "Admin")]
 		[HttpGet("{id}")]
 		[ProducesResponseType(typeof(ApplicationUser), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]

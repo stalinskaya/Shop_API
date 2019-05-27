@@ -37,7 +37,7 @@ namespace Shop.UI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-		
+
 			services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
 
 			services.Configure<CookiePolicyOptions>(options =>
@@ -67,7 +67,7 @@ namespace Shop.UI
 			.AddEntityFrameworkStores<ShopContext>()
 			.AddDefaultTokenProviders();
 
-			
+
 			services.Configure<IdentityOptions>(options =>
 			{
 				options.Password.RequireDigit = false;
@@ -83,7 +83,6 @@ namespace Shop.UI
 			services.AddScoped<IOrderProductService, OrderProductService>();
 			services.AddScoped<IAccountService, AccountService>();
 			services.AddScoped<IEmailService, EmailService>();
-			services.AddScoped<IRoleService, RoleService>();
 			services.AddScoped<IOrderService, OrderService>();
 			services.AddScoped<IFileService, FileService>();
 
@@ -93,6 +92,7 @@ namespace Shop.UI
 			//Jwt Authentication
 
 			var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"].ToString());
+
 
 			services.AddAuthentication(x =>
 			{
@@ -106,8 +106,9 @@ namespace Shop.UI
 				{
 					ValidateIssuerSigningKey = true,
 					IssuerSigningKey = new SymmetricSecurityKey(key),
-					ValidateIssuer = false,
-					ValidateAudience = false,
+					ValidateIssuer = true,
+					ValidateAudience = true,
+					ValidateLifetime = true,
 					ClockSkew = TimeSpan.Zero
 				};
 			});

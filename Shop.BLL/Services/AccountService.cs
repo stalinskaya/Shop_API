@@ -121,12 +121,13 @@ namespace Shop.BLL.Services
 			{
 				var role = await UserManager.GetRolesAsync(user);
 				var options = new IdentityOptions();
-
+				
 				var tokenDescriptor = new SecurityTokenDescriptor
 				{
 					Subject = new ClaimsIdentity(new Claim[]
 					{
-						new Claim("UserID",user.Id.ToString())
+						new Claim(ClaimTypes.Name, user.Email.ToString()),
+						new Claim(options.ClaimsIdentity.RoleClaimType,role.FirstOrDefault())
 					}),
 					Expires = DateTime.UtcNow.AddDays(1),
 					SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(applicationSettings.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)

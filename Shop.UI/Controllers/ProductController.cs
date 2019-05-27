@@ -10,6 +10,7 @@ using Shop.Models;
 using System.Net.Http;
 using Shop.UI.ViewModels;
 using Shop.BLL.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Shop.UI.Controllers
 {
@@ -44,6 +45,7 @@ namespace Shop.UI.Controllers
 			return Ok(product);
 		}
 
+		[Authorize(Roles ="Admin")]
 		[HttpPost]
 		public IActionResult Post([FromForm] ProductViewModel productViewModel)
 		{
@@ -64,6 +66,7 @@ namespace Shop.UI.Controllers
 			return Ok();
 		}
 
+		[Authorize(Roles = "Admin")]
 		[HttpPut("{id}")]
 		public IActionResult Put(int id, [FromForm] Product product)
 		{
@@ -90,6 +93,7 @@ namespace Shop.UI.Controllers
 			return Ok(product);
 		}
 
+		[Authorize(Roles = "Admin")]
 		[HttpDelete("{id}")]
 		public IActionResult Delete(int id)
 		{
